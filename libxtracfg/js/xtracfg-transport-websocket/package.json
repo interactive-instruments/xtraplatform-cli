@@ -1,7 +1,7 @@
 {
   "name": "@xtracfg/transport-websocket",
   "description": "",
-  "version": "4.3.6",
+  "version": "4.3.7",
   "author": "",
   "license": "MIT",
   "type": "module",
@@ -14,7 +14,7 @@
     "test": "tsx ./test/test.ts"
   },
   "dependencies": {
-    "@xtracfg/core": "4.3.6",
+    "@xtracfg/core": "4.3.7",
     "async-mutex": "^0.5.0",
     "isomorphic-ws": "^5.0.0",
     "ws": "^8.18.0"
