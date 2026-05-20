@@ -136,6 +136,9 @@ public class AutoHandler {
             String selectedConfig = parameters.get("selectedConfig");
             String newId = parameters.get("id");
             Map<String, Boolean> typeObject = parseTypeObject(parameters.get("typeObject"));
+            boolean createProvider = typeObject.getOrDefault("provider", true);
+            boolean createService = typeObject.getOrDefault("service", true);
+            boolean createTileProvider = typeObject.getOrDefault("tileProvider", true);
 
             if ("fromScratch".equalsIgnoreCase(createOption)) {
                 return generateBasicEntity(parameters, ldproxyCfg, typeObject);
@@ -287,7 +290,7 @@ public class AutoHandler {
 
             List<String> newFiles = new ArrayList<>();
 
-            if (typeObject.getOrDefault("provider", true)) {
+            if (createProvider) {
                 FeatureProviderDataV2 featureProvider = parseFeatureProvider(parameters, ldproxyCfg, types);
 
                 AutoEntityFactory autoFactory =
@@ -305,7 +308,7 @@ public class AutoHandler {
                                 .toString());
             }
 
-            if (typeObject.getOrDefault("service", true)) {
+            if (createService) {
                 OgcApiDataV2 ogcApi = parseOgcApi(parameters, ldproxyCfg);
 
                 AutoEntityFactory autoFactory2 =
@@ -324,6 +327,9 @@ public class AutoHandler {
                 });
 
                 ldproxyCfg.writeEntity(entityData2);
+                if (createTileProvider) {
+                    ensureTilesApiConfig(ldproxyCfg, entityData2);
+                }
 
                 newFiles.add(
                         ldproxyCfg
@@ -332,7 +338,7 @@ public class AutoHandler {
                                 .toString());
             }
 
-            if (typeObject.getOrDefault("tileProvider", true)) {
+            if (createTileProvider) {
                 TileProviderFeaturesData tileProvider = parseTileProvider(parameters, ldproxyCfg);
 
                 AutoEntityFactory autoFactory3 =
@@ -563,7 +569,11 @@ public class AutoHandler {
             List<String> newFiles = new ArrayList<>();
 
             try {
-                if (typeObject.getOrDefault("provider", true)) {
+                boolean createProvider = typeObject.getOrDefault("provider", true);
+                boolean createService = typeObject.getOrDefault("service", true);
+                boolean createTileProvider = typeObject.getOrDefault("tileProvider", true);
+
+                if (createProvider) {
                     parameters.put("featureProviderType", "PGIS");
 
                     FeatureProviderDataV2 featureProvider =
@@ -578,7 +588,7 @@ public class AutoHandler {
                                     .toString());
                 }
 
-                if (typeObject.getOrDefault("service", true)) {
+                if (createService) {
                     OgcApiDataV2 ogcApi = parseOgcApi(parameters, ldproxyCfg);
 
                     AutoEntityFactory autoFactory =
@@ -588,6 +598,9 @@ public class AutoHandler {
                     });
 
                     ldproxyCfg.writeEntity(entityData);
+                    if (createTileProvider) {
+                        ensureTilesApiConfig(ldproxyCfg, entityData);
+                    }
 
                     newFiles.add(
                             ldproxyCfg
@@ -596,7 +609,7 @@ public class AutoHandler {
                                     .toString());
                 }
 
-                if (typeObject.getOrDefault("tileProvider", true)) {
+                if (createTileProvider) {
                     TileProviderFeaturesData tileProvider = parseTileProvider(parameters, ldproxyCfg);
 
                     ldproxyCfg.writeEntity(tileProvider);
@@ -618,5 +631,41 @@ public class AutoHandler {
         }
 
         return result;
+    }
+
+    private static void ensureTilesApiConfig(LdproxyCfg ldproxyCfg, OgcApiDataV2 service) throws IOException {
+        File serviceFile = ldproxyCfg.getEntityPath(service).toFile();
+
+        Map<String, Object> yamlContent = ldproxyCfg.getObjectMapper().readValue(serviceFile, Map.class);
+
+        List<Map<String, Object>> apiEntries = new ArrayList<>();
+        Object apiValue = yamlContent.get("api");
+        if (apiValue instanceof List<?> existingList) {
+            for (Object entry : existingList) {
+                if (entry instanceof Map<?, ?> existingMap) {
+                    apiEntries.add(new LinkedHashMap<>((Map<String, Object>) existingMap));
+                }
+            }
+        }
+
+        Map<String, Object> tilesEntry = new LinkedHashMap<>();
+        tilesEntry.put("buildingBlock", "TILES");
+        tilesEntry.put("enabled", true);
+
+        boolean replaced = false;
+        for (int i = 0; i < apiEntries.size(); i++) {
+            Object buildingBlock = apiEntries.get(i).get("buildingBlock");
+            if ("TILES".equals(buildingBlock)) {
+                apiEntries.set(i, tilesEntry);
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) {
+            apiEntries.add(tilesEntry);
+        }
+
+        yamlContent.put("api", apiEntries);
+        ldproxyCfg.getObjectMapper().writeValue(serviceFile, yamlContent);
     }
 }
