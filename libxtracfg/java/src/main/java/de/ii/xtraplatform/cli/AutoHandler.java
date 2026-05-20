@@ -315,7 +315,13 @@ public class AutoHandler {
                         getAutoFactory(ldproxyCfg, EntityType.SERVICES.toString(), ogcApi.getEntitySubType());
 
                 Map<String, List<String>> types2 =
-                        types.containsKey("") ? types : Map.of("", new ArrayList<>(types.keySet()));
+                        types.containsKey("")
+                                ? types
+                                : Map.of(
+                                        "",
+                                        types.values().stream()
+                                                .flatMap(Collection::stream)
+                                                .toList());
 
                 OgcApiDataV2 entityData2 = autoFactory2.generate(ogcApi, types2, ignore -> {
                 });
@@ -340,7 +346,13 @@ public class AutoHandler {
                                 ldproxyCfg, EntityType.PROVIDERS.toString(), tileProvider.getEntitySubType());
 
                 Map<String, List<String>> types2 =
-                        types.containsKey("") ? types : Map.of("", new ArrayList<>(types.keySet()));
+                        types.containsKey("")
+                                ? types
+                                : Map.of(
+                                        "",
+                                        types.values().stream()
+                                                .flatMap(Collection::stream)
+                                                .toList());
 
                 TileProviderFeaturesData entityData3 =
                         autoFactory3.generate(tileProvider, types2, ignore -> {
