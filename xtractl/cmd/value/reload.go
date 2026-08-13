@@ -57,7 +57,7 @@ func isValidId(id string, types []string) bool {
 	}
 
 	for _, typ := range types {
-		if strings.HasPrefix(typ, id) {
+		if strings.HasPrefix(id, typ) {
 			return true
 		}
 	}
