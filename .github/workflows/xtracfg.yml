@@ -42,6 +42,18 @@ jobs:
         if: ${{ matrix.os.type == 'windows' }}
         with:
           arch: x64
+      - name: zlib
+        if: ${{ matrix.os.type == 'linux' }}
+        working-directory: /tmp
+        env:
+          ZLIB_VERSION: 1.3.2 #1.2.13
+        run: |
+          wget https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz
+          tar xzvf zlib-${ZLIB_VERSION}.tar.gz
+          mv zlib-${ZLIB_VERSION} zlib
+          cd zlib
+          CFLAGS="-fPIC" ./configure --static
+          make
       - name: java
         working-directory: ./libxtracfg/java
         run: |
