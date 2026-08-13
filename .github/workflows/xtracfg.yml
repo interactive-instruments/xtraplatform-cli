@@ -42,18 +42,6 @@ jobs:
         if: ${{ matrix.os.type == 'windows' }}
         with:
           arch: x64
-      - name: zlib
-        if: ${{ matrix.os.type == 'linux' }}
-        working-directory: /tmp
-        env:
-          ZLIB_VERSION: 1.2.11
-        run: |
-          wget https://zlib.net/fossils/zlib-${ZLIB_VERSION}.tar.gz
-          tar xzvf zlib-${ZLIB_VERSION}.tar.gz
-          mv zlib-${ZLIB_VERSION} zlib
-          cd zlib
-          CFLAGS="-fPIC" ./configure --static
-          make
       - name: java
         working-directory: ./libxtracfg/java
         run: |
