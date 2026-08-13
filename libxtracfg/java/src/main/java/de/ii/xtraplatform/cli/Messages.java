@@ -1,21 +1,20 @@
 package de.ii.xtraplatform.cli;
 
+import de.ii.xtraplatform.values.domain.Identifier;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import de.ii.xtraplatform.values.domain.Identifier;
-import shadow.com.networknt.schema.ValidationMessage;
+import shadow.com.networknt.schema.Error;
 
 public abstract class Messages {
 
   private final EntitiesHandler.Type type;
   private final Path path;
   private final Identifier identifier;
-  private final Set<ValidationMessage> validationMessages;
+  private final Set<Error> validationMessages;
   private String error;
 
   public Messages(EntitiesHandler.Type type, Identifier identifier, Path path) {
@@ -72,15 +71,15 @@ public abstract class Messages {
     return !getWarnings().isEmpty();
   }
 
-  protected Set<ValidationMessage> getMessages() {
+  protected Set<Error> getMessages() {
     return validationMessages;
   }
 
-  public void addMessage(ValidationMessage validationMessage) {
+  public void addMessage(Error validationMessage) {
     this.validationMessages.add(validationMessage);
   }
 
-  public void addMessages(Set<ValidationMessage> validationMessages) {
+  public void addMessages(Set<Error> validationMessages) {
     this.validationMessages.addAll(validationMessages);
   }
 
@@ -122,13 +121,13 @@ public abstract class Messages {
 
   protected abstract String getSummary();
 
-  protected abstract boolean isWarning(ValidationMessage vm);
+  protected abstract boolean isWarning(Error vm);
 
-  protected boolean isError(ValidationMessage vm) {
+  protected boolean isError(Error vm) {
     return !isWarning(vm);
   }
 
-  protected String getMessage(ValidationMessage vm) {
+  protected String getMessage(Error vm) {
     return vm.getMessage();
   }
 }

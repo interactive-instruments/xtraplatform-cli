@@ -4,9 +4,9 @@ import de.ii.xtraplatform.values.domain.Identifier;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Objects;
-import shadow.com.networknt.schema.JsonNodePath;
-import shadow.com.networknt.schema.PathType;
-import shadow.com.networknt.schema.ValidationMessage;
+import shadow.com.networknt.schema.Error;
+import shadow.com.networknt.schema.path.NodePath;
+import shadow.com.networknt.schema.path.PathType;
 
 public class Migration extends Messages {
   public Migration(EntitiesHandler.Type type, Identifier identifier, Path path) {
@@ -32,20 +32,20 @@ public class Migration extends Messages {
   }
 
   @Override
-  protected boolean isWarning(ValidationMessage vm) {
+  protected boolean isWarning(Error vm) {
     return isMigration(vm);
   }
 
-  private static boolean isMigration(ValidationMessage vm) {
-    return Objects.equals(vm.getCode(), MIGRATION);
+  private static boolean isMigration(Error vm) {
+    return Objects.equals(vm.getKeyword(), MIGRATION);
   }
 
   private static final String MIGRATION = "migration";
 
-  static ValidationMessage migration(String path, String message) {
-    return new ValidationMessage.Builder()
-        .code(MIGRATION)
-        .instanceLocation(new JsonNodePath(PathType.JSON_PATH).append(path))
+  static Error migration(String path, String message) {
+    return new Error.Builder()
+        .keyword(MIGRATION)
+        .instanceLocation(new NodePath(PathType.JSON_PATH).append(path))
         .arguments(message)
         .format(new MessageFormat("{0}: {1}"))
         .build();

@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
-import shadow.com.networknt.schema.JsonNodePath;
-import shadow.com.networknt.schema.PathType;
-import shadow.com.networknt.schema.ValidationMessage;
-import shadow.com.networknt.schema.ValidatorTypeCode;
+import shadow.com.networknt.schema.Error;
+import shadow.com.networknt.schema.keyword.KeywordType;
+import shadow.com.networknt.schema.path.NodePath;
+import shadow.com.networknt.schema.path.PathType;
 
 public class CfgValidation extends Messages {
 
@@ -77,12 +77,12 @@ public class CfgValidation extends Messages {
   }
 
   @Override
-  protected boolean isWarning(ValidationMessage vm) {
+  protected boolean isWarning(Error vm) {
     return DeprecatedKeyword.isDeprecated(vm) || isUnknown(vm) || isRedundant(vm);
   }
 
   @Override
-  protected String getMessage(ValidationMessage vm) {
+  protected String getMessage(Error vm) {
     if (isUnknown(vm)) {
       return String.format(
           "%s.%s is unknown for type %s",
@@ -97,28 +97,28 @@ public class CfgValidation extends Messages {
     return vm.getMessage();
   }
 
-  private static boolean isUnknown(ValidationMessage vm) {
-    return Objects.equals(vm.getCode(), ValidatorTypeCode.ADDITIONAL_PROPERTIES.getErrorCode());
+  private static boolean isUnknown(Error vm) {
+    return Objects.equals(vm.getKeyword(), KeywordType.ADDITIONAL_PROPERTIES.getValue());
   }
 
-  private static boolean isRedundant(ValidationMessage vm) {
-    return Objects.equals(vm.getCode(), REDUNDANT);
+  private static boolean isRedundant(Error vm) {
+    return Objects.equals(vm.getKeyword(), REDUNDANT);
   }
 
   private static final String REDUNDANT = "redundant";
 
-  static ValidationMessage redundant(String path) {
-    return new ValidationMessage.Builder()
-        .code(REDUNDANT)
-        .instanceLocation(new JsonNodePath(PathType.JSON_PATH).append(path))
+  static Error redundant(String path) {
+    return new Error.Builder()
+        .keyword(REDUNDANT)
+        .instanceLocation(new NodePath(PathType.JSON_PATH).append(path))
         .format(new MessageFormat("$.{0}: is redundant and can be removed"))
         .build();
   }
 
-  static ValidationMessage deprecated(String path) {
-    return new ValidationMessage.Builder()
-        .code(DeprecatedKeyword.KEYWORD)
-        .instanceLocation(new JsonNodePath(PathType.JSON_PATH).append(path))
+  static Error deprecated(String path) {
+    return new Error.Builder()
+        .keyword(DeprecatedKeyword.KEYWORD)
+        .instanceLocation(new NodePath(PathType.JSON_PATH).append(path))
         .format(new MessageFormat("$.{0}: is deprecated and should be upgraded"))
         .build();
   }

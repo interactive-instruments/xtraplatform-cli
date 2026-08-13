@@ -12,10 +12,10 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import shadow.com.networknt.schema.JsonNodePath;
-import shadow.com.networknt.schema.PathType;
-import shadow.com.networknt.schema.ValidationMessage;
-import shadow.com.networknt.schema.ValidatorTypeCode;
+import shadow.com.networknt.schema.Error;
+import shadow.com.networknt.schema.keyword.KeywordType;
+import shadow.com.networknt.schema.path.NodePath;
+import shadow.com.networknt.schema.path.PathType;
 
 public class Validation extends Messages {
 
@@ -71,7 +71,7 @@ public class Validation extends Messages {
       String fileContent =
           loadFileContent(ldproxyCfg.getDataDirectory().resolve(getPath()), getType(), fileInfo);
 
-      for (ValidationMessage msg : ldproxyCfg.validateEntity(fileContent, fileInfo.entityType)) {
+      for (Error msg : ldproxyCfg.validateEntity(fileContent, fileInfo.entityType)) {
         if ( // msg.getMessage().contains("string found, boolean expected") ||
         // msg.getMessage().contains("integer found, string expected") ||
         msg.getMessage().contains(".tileProviderId: is deprecated")
@@ -106,10 +106,9 @@ public class Validation extends Messages {
     }
   }
 
-  private static ValidationMessage copyWith(ValidationMessage msg, String newMessage) {
-    return new ValidationMessage.Builder()
-        .type(msg.getType())
-        .code(msg.getCode())
+  private static Error copyWith(Error msg, String newMessage) {
+    return new Error.Builder()
+        .keyword(msg.getKeyword())
         .instanceLocation(msg.getInstanceLocation())
         .format(new MessageFormat(""))
         .message(newMessage)
@@ -235,12 +234,12 @@ public class Validation extends Messages {
   }
 
   @Override
-  protected boolean isWarning(ValidationMessage vm) {
+  protected boolean isWarning(Error vm) {
     return DeprecatedKeyword.isDeprecated(vm) || isUnknown(vm) || isRedundant(vm);
   }
 
   @Override
-  protected String getMessage(ValidationMessage vm) {
+  protected String getMessage(Error vm) {
     if (isUnknown(vm)) {
       return String.format(
           "%s.%s is unknown for type %s",
@@ -255,25 +254,25 @@ public class Validation extends Messages {
     return vm.getMessage();
   }
 
-  private static boolean isUnknown(ValidationMessage vm) {
-    return Objects.equals(vm.getCode(), ValidatorTypeCode.ADDITIONAL_PROPERTIES.getErrorCode());
+  private static boolean isUnknown(Error vm) {
+    return Objects.equals(vm.getKeyword(), KeywordType.ADDITIONAL_PROPERTIES.getValue());
   }
 
-  private static boolean isRedundant(ValidationMessage vm) {
-    return Objects.equals(vm.getCode(), REDUNDANT);
+  private static boolean isRedundant(Error vm) {
+    return Objects.equals(vm.getKeyword(), REDUNDANT);
   }
 
   private static final String REDUNDANT = "redundant";
 
-  static ValidationMessage redundant(String path) {
-    JsonNodePath nodePath = new JsonNodePath(PathType.LEGACY);
+  static Error redundant(String path) {
+    NodePath nodePath = new NodePath(PathType.LEGACY);
     String[] parts = path.split("\\.");
     for (int i = 0; i < parts.length - 1; i++) {
       nodePath = nodePath.append(parts[i]);
     }
 
-    return new ValidationMessage.Builder()
-        .code(REDUNDANT)
+    return new Error.Builder()
+        .keyword(REDUNDANT)
         .instanceLocation(nodePath)
         .property(parts[parts.length - 1])
         .arguments(parts[parts.length - 1])
