@@ -91,6 +91,35 @@ To check only a single entity, pass the path to the file relative to the source 
 		},
 	}
 
+	checkValues := &cobra.Command{
+		Use:   "values [path]",
+		Short: "Check values in the store source",
+		Long: `Checks value configurations like stored queries for deprecated settings.
+To check only a single value, pass the path to the file relative to the source as argument.`,
+		Example: name + " check values -v \n" + name + " check values -v store/values/queries/api/query.json",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 1 {
+				return errors.New("only one argument expected")
+			}
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if *debug {
+				fmt.Fprint(os.Stdout, "Checking values in the store source: ", store.Label(), "\n")
+			}
+			path := ""
+			if len(args) > 0 {
+				path = args[0]
+			}
+
+			results, err := store.Handle(map[string]interface{}{"ignoreRedundant": strconv.FormatBool(*ignoreRedundant), "path": path}, "check", "values")
+
+			util.PrintResults(results, err)
+
+			printFix(results, err, name)
+		},
+	}
+
 	checkLayout := &cobra.Command{
 		Use:   "layout",
 		Short: "Check layout of the store source",
@@ -111,6 +140,7 @@ To check only a single entity, pass the path to the file relative to the source 
 
 	check.AddCommand(checkCfg)
 	check.AddCommand(checkEntities)
+	check.AddCommand(checkValues)
 	check.AddCommand(checkLayout)
 
 	return check

@@ -40,7 +40,7 @@ public class Migration extends Messages {
     return Objects.equals(vm.getKeyword(), MIGRATION);
   }
 
-  private static final String MIGRATION = "migration";
+  static final String MIGRATION = "migration";
 
   static Error migration(String path, String message) {
     return new Error.Builder()
