@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'de.interactive_instruments', name: 'ldproxy-cfg', version: '4.8.0'
+    implementation group: 'de.interactive_instruments', name: 'ldproxy-cfg', version: '4.9.0-v5-deprecated-options-migration-SNAPSHOT'
     implementation group: 'org.slf4j', name: isCi ? 'slf4j-nop' : 'slf4j-simple', version: '2.0.16'
 
     // 24.x is for JDK 21

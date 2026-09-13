@@ -60,6 +60,20 @@ No changes are made without confirmation (unless --yes is set).`,
 				util.PrintResults(results, err)
 			}
 
+			fmt.Fprint(os.Stdout, "\n", "Upgrading values", "\n")
+
+			results, err = store.Handle(map[string]interface{}{"force": strconv.FormatBool(*force)}, "pre_upgrade", "values")
+
+			if !*noConfirm {
+				util.PrintResults(results, err)
+			}
+
+			if xtracfg.HasStatus(results, xtracfg.Confirmation) {
+				results, err = store.Handle(map[string]interface{}{"backup": strconv.FormatBool(*backup), "force": strconv.FormatBool(*force), "noConfirm": strconv.FormatBool(*noConfirm)}, "upgrade", "values")
+
+				util.PrintResults(results, err)
+			}
+
 			fmt.Fprint(os.Stdout, "\n", "Upgrading layout", "\n")
 
 			results, err = store.Handle(map[string]interface{}{"ignoreRedundant": strconv.FormatBool(*keepRedundant)}, "pre_upgrade", "layout")
@@ -156,6 +170,44 @@ No changes are made without confirmation (unless --yes is set).`,
 		},
 	}
 
+	upgradeValues := &cobra.Command{
+		Use:   "values [path]",
+		Short: "Upgrade values in the store source",
+		Long: `Upgrades value configurations like stored queries with deprecated settings.
+To upgrade only a single value, pass the path to the file relative to the source as argument.
+No changes are made without confirmation (unless --yes is set).`,
+		Example: name + " upgrade values -v \n" + name + " upgrade values -v store/values/queries/api/query.json",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 1 {
+				return errors.New("only one argument expected")
+			}
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if *debug {
+				fmt.Fprint(os.Stdout, "Upgrading values in the store source: ", store.Label(), "\n")
+			}
+			path := ""
+			if len(args) > 0 {
+				path = args[0]
+			}
+
+			results, err := store.Handle(map[string]interface{}{"force": strconv.FormatBool(*force), "path": path}, "pre_upgrade", "values")
+
+			if !*noConfirm {
+				util.PrintResults(results, err)
+			}
+
+			if xtracfg.HasStatus(results, xtracfg.Confirmation) {
+				results, err = store.Handle(map[string]interface{}{"backup": strconv.FormatBool(*backup), "force": strconv.FormatBool(*force), "noConfirm": strconv.FormatBool(*noConfirm), "path": path}, "upgrade", "values")
+
+				util.PrintResults(results, err)
+			}
+
+			fmt.Fprint(os.Stdout, "\n")
+		},
+	}
+
 	upgradeLayout := &cobra.Command{
 		Use:   "layout",
 		Short: "Upgrade layout of the store source",
@@ -185,6 +237,7 @@ No changes are made without confirmation (unless --yes is set).`,
 
 	upgrade.AddCommand(upgradeCfg)
 	upgrade.AddCommand(upgradeEntities)
+	upgrade.AddCommand(upgradeValues)
 	upgrade.AddCommand(upgradeLayout)
 
 	return upgrade

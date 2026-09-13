@@ -8,6 +8,7 @@ public abstract class Store extends Common<Context> {
   public enum Subcommand {
     cfg,
     entities,
+    values,
     layout
   }
 

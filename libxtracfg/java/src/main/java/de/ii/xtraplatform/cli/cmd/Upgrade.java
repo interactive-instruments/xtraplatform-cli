@@ -28,6 +28,8 @@ public class Upgrade extends Store {
         case entities:
           return EntitiesHandler.preUpgrade(
               ldproxyCfg, EntitiesHandler.Type.All, path, ignoreRedundant, force, verbose, debug);
+        case values:
+          return ValuesHandler.preUpgrade(ldproxyCfg, path, force, verbose, debug);
         case layout:
           return LayoutHandler.preUpgrade(layout, verbose);
         default:
@@ -48,6 +50,8 @@ public class Upgrade extends Store {
             force,
             verbose,
             debug);
+      case values:
+        return ValuesHandler.upgrade(ldproxyCfg, path, backup, force, verbose, debug);
       case layout:
         return LayoutHandler.upgrade(layout, verbose);
       default:
